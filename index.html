@@ -87,9 +87,11 @@
         .unit { font-size: 14px; color: #94a3b8; font-weight: 600; margin-left: 6px; }
 
         /* 5. BUTTONS */
+        .btn-row {
+            display: flex; gap: 10px; margin-top: 14px;
+        }
         .action-btn {
             width: 100%;
-            margin-top: 12px;
             padding: 14px;
             background: #9333ea;
             color: #ffffff;
@@ -103,6 +105,15 @@
             transition: transform 0.1s, background 0.2s;
         }
         .action-btn:active { transform: scale(0.98); background: #7e22ce; }
+        
+        .clear-inputs-btn {
+            background: #f1f5f9;
+            color: #64748b;
+            box-shadow: none;
+        }
+        .clear-inputs-btn:active {
+            background: #e2e8f0;
+        }
 
         /* 6. COMPARISON BUBBLES */
         .divider {
@@ -115,7 +126,7 @@
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
         }
         .results-title { font-size: 14px; font-weight: 700; color: #475569; }
-        .clear-btn { font-size: 12px; color: #ef4444; background: none; border: none; font-weight: 600; cursor: pointer; }
+        .clear-all-btn { font-size: 12px; color: #ef4444; background: none; border: none; font-weight: 600; cursor: pointer; }
         
         #bubble-grid {
             display: grid;
@@ -185,15 +196,20 @@
             </div>
         </div>
 
-        <button class="action-btn" onclick="calculateAndAdd()">
-            Calculate & Compare
-        </button>
+        <div class="btn-row">
+            <button class="action-btn" style="flex: 2;" onclick="calculateAndAdd()">
+                Calculate
+            </button>
+            <button class="action-btn clear-inputs-btn" style="flex: 1;" onclick="clearInputs()">
+                Clear
+            </button>
+        </div>
 
         <div class="divider"></div>
 
         <div class="results-header">
             <div class="results-title">Comparisons</div>
-            <button class="clear-btn" onclick="clearBubbles()">Clear All</button>
+            <button class="clear-all-btn" onclick="clearBubbles()">Clear All</button>
         </div>
 
         <div id="bubble-grid">
@@ -227,7 +243,7 @@
             // 3. Calculate
             const totalProtein = protein * servings;
             const priceInCents = price * 100;
-            const centsPerGram = (priceInCents / totalProtein).toFixed(1); // e.g., 4.5
+            const centsPerGram = (priceInCents / totalProtein).toFixed(1);
 
             // 4. Create Bubble UI
             const bubble = document.createElement('div');
@@ -239,20 +255,9 @@
                 <div class="bubble-name">${name}</div>
             `;
 
-            // 5. Add to grid and reset fields
-            grid.prepend(bubble); // Adds to the beginning of the list
-            
-            // Optional: Keep fields populated for rapid adjustments, 
-            // or uncomment the lines below to clear them after adding.
-            // elPrice.value = '';
-            // elProtein.value = '';
-            // elServings.value = '';
-            // elName.value = '';
+            // 5. Add to grid
+            grid.prepend(bubble);
         }
 
-        function clearBubbles() {
-            grid.innerHTML = '';
-        }
-    </script>
-</body>
-</html>
+        // Clears only the text inputs
+        function clearInputs
