@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Protein Calc</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Protein">
+    <meta name="theme-color" content="#9333ea">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="app-icon.svg">
+    <link rel="apple-touch-icon" href="app-icon.svg">
+
+    <style>
+        /* 1. RESET & BASICS */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            background: linear-gradient(135deg, #c084fc, #9333ea, #4c1d95);
+            color: #334155;
+            padding: 20px;
+        }
+
+        /* 2. THE GLASS CARD */
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        /* 3. TYPOGRAPHY */
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(to right, #7e22ce, #4c1d95);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2px;
+        }
+        .subtitle { font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase; }
+
+        /* 4. INPUTS */
+        .input-group {
+            background: #f8fafc;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: all 0.2s ease;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .input-group:focus-within {
+            background: #fff;
+            border-color: #a855f7;
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+        }
+        .label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; width: 45%; }
+        .input-row { display: flex; align-items: baseline; width: 55%; justify-content: flex-end;}
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            font-weight: 700;
+            color: #334155;
+            text-align: right;
+            outline: none;
+            font-family: inherit;
+        }
+        input::placeholder { color: #cbd5e1; font-weight: 500; }
+        .unit { font-size: 14px; color: #94a3b8; font-weight: 600; margin-left: 6px; }
+
+        /* 5. BUTTONS */
+        .action-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 14px;
+            background: #9333ea;
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+            transition: transform 0.1s, background 0.2s;
+        }
+        .action-btn:active { transform: scale(0.98); background: #7e22ce; }
+
+        /* 6. COMPARISON BUBBLES */
+        .divider {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 20px 0;
+            position: relative;
+        }
+        .results-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        }
+        .results-title { font-size: 14px; font-weight: 700; color: #475569; }
+        .clear-btn { font-size: 12px; color: #ef4444; background: none; border: none; font-weight: 600; cursor: pointer; }
+        
+        #bubble-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .bubble {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            position: relative;
+        }
+        .bubble-price { font-size: 22px; font-weight: 800; color: #9333ea; }
+        .bubble-unit { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
+        .bubble-name { font-size: 12px; font-weight: 600; color: #334155; line-height: 1.2; }
+        .bubble-delete {
+            position: absolute; top: -6px; right: -6px;
+            background: #cbd5e1; color: white; border: none;
+            width: 20px; height: 20px; border-radius: 50%;
+            font-size: 12px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div style="margin-bottom: 20px;">
+            <h1>Protein Value</h1>
+            <div class="subtitle">Price Per Gram Calculator</div>
+        </div>
+
+        <div class="input-group">
+            <label class="label">Total Price</label>
+            <div class="input-row">
+                <input type="number" id="val-price" placeholder="0.00" inputmode="decimal">
+                <span class="unit">$</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="label">Protein / Serve</label>
+            <div class="input-row">
+                <input type="number" id="val-protein" placeholder="0" inputmode="decimal">
+                <span class="unit">g</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="label">Total Servings</label>
+            <div class="input-row">
+                <input type="number" id="val-servings" placeholder="1" inputmode="numeric">
+                <span class="unit">qty</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="label">Product Name</label>
+            <div class="input-row">
+                <input type="text" id="val-name" placeholder="Optional">
+            </div>
+        </div>
+
+        <button class="action-btn" onclick="calculateAndAdd()">
+            Calculate & Compare
+        </button>
+
+        <div class="divider"></div>
+
+        <div class="results-header">
+            <div class="results-title">Comparisons</div>
+            <button class="clear-btn" onclick="clearBubbles()">Clear All</button>
+        </div>
+
+        <div id="bubble-grid">
+            </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const elPrice = document.getElementById('val-price');
+        const elProtein = document.getElementById('val-protein');
+        const elServings = document.getElementById('val-servings');
+        const elName = document.getElementById('val-name');
+        const grid = document.getElementById('bubble-grid');
+
+        function calculateAndAdd() {
+            // 1. Gather values
+            const price = parseFloat(elPrice.value);
+            const protein = parseFloat(elProtein.value);
+            // Default to 1 if servings is blank or invalid
+            let servings = parseFloat(elServings.value);
+            if (isNaN(servings) || servings <= 0) servings = 1;
+            
+            const name = elName.value.trim() || "Unnamed";
+
+            // 2. Validate essential inputs
+            if (isNaN(price) || price <= 0 || isNaN(protein) || protein <= 0) {
+                alert("Please enter a valid Price and Protein amount.");
+                return;
+            }
+
+            // 3. Calculate
+            const totalProtein = protein * servings;
+            const priceInCents = price * 100;
+            const centsPerGram = (priceInCents / totalProtein).toFixed(1); // e.g., 4.5
+
+            // 4. Create Bubble UI
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.innerHTML = `
+                <button class="bubble-delete" onclick="this.parentElement.remove()">✕</button>
+                <div class="bubble-price">${centsPerGram}¢</div>
+                <div class="bubble-unit">per gram</div>
+                <div class="bubble-name">${name}</div>
+            `;
+
+            // 5. Add to grid and reset fields
+            grid.prepend(bubble); // Adds to the beginning of the list
+            
+            // Optional: Keep fields populated for rapid adjustments, 
+            // or uncomment the lines below to clear them after adding.
+            // elPrice.value = '';
+            // elProtein.value = '';
+            // elServings.value = '';
+            // elName.value = '';
+        }
+
+        function clearBubbles() {
+            grid.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
