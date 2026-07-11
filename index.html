@@ -216,7 +216,7 @@
             </div>
     </div>
 
-    <script>
+<script>
         // DOM Elements
         const elPrice = document.getElementById('val-price');
         const elProtein = document.getElementById('val-protein');
@@ -225,12 +225,15 @@
         const grid = document.getElementById('bubble-grid');
 
         function calculateAndAdd() {
-            // 1. Gather values
+            // 1. Gather values safely
             const price = parseFloat(elPrice.value);
             const protein = parseFloat(elProtein.value);
-            // Default to 1 if servings is blank or invalid
+            
+            // Default to 1 if servings is blank, 0, or invalid
             let servings = parseFloat(elServings.value);
-            if (isNaN(servings) || servings <= 0) servings = 1;
+            if (isNaN(servings) || servings <= 0) {
+                servings = 1;
+            }
             
             const name = elName.value.trim() || "Unnamed";
 
@@ -240,24 +243,39 @@
                 return;
             }
 
-            // 3. Calculate
+            // 3. Calculate cents per gram
             const totalProtein = protein * servings;
             const priceInCents = price * 100;
             const centsPerGram = (priceInCents / totalProtein).toFixed(1);
 
-            // 4. Create Bubble UI
+            // 4. Create Bubble UI Element
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
             bubble.innerHTML = `
                 <button class="bubble-delete" onclick="this.parentElement.remove()">✕</button>
                 <div class="bubble-price">${centsPerGram}¢</div>
                 <div class="bubble-unit">per gram</div>
-                <div class="bubble-name">${name}</div>
+                <div class="bubble-name"></div>
             `;
+            
+            // Safely insert the text to prevent any custom character rendering bugs
+            bubble.querySelector('.bubble-name').textContent = name;
 
             // 5. Add to grid
             grid.prepend(bubble);
         }
 
         // Clears only the text inputs
-        function clearInputs
+        function clearInputs() {
+            elPrice.value = '';
+            elProtein.value = '';
+            elServings.value = '';
+            elName.value = '';
+            elPrice.focus(); // Jump back to the top box automatically
+        }
+
+        // Clears the saved comparisons
+        function clearBubbles() {
+            grid.innerHTML = '';
+        }
+    </script>
